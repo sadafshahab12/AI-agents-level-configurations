@@ -7,7 +7,7 @@ from agents import (
     set_tracing_disabled,
     function_tool,
 )
-
+import requests
 import asyncio
 import os
 from dotenv import load_dotenv
@@ -27,6 +27,23 @@ def translate_story(story):
     return f"Translate to Korean: {story}"
 
 
+weather_api_key = os.getenv("WEATHER_API_KEY")
+
+
+@function_tool
+def weather_tool(city):
+    """Fetch the current weather for the given city"""
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={weather_api_key}&units=metric"
+    response = requests.get(url)
+    if response.status_code != 200:
+        return f"Could not fetch weather for {city}."
+    data = response.json()
+    description = data["weather"][0]["description"]
+    temp = data["main"]["temp"]
+    humidity = data["main"]["humidity"]
+    return f"Weather in {city} is {description} with temperature {temp} and humidity {humidity}%."
+
+
 async def main():
 
     model = OpenAIChatCompletionsModel(model="gemini-2.0-flash", openai_client=client)
@@ -40,7 +57,12 @@ async def main():
             temperature=0.2,
         ),
     )
-
+    weather_agent = Agent(
+        name="Weather Teller",
+        instructions="Fetch the realtime weather data of karachi.",
+        model=model,
+        tools=[weather_tool],
+    )
     creative_agent = Agent(
         name="Story Teller",
         instructions="Your are a story teller."
@@ -56,7 +78,7 @@ async def main():
     # prompt = """If 12 grams of carbon (C) completely react with 32 grams of oxygen (O₂) to form carbon dioxide (CO₂), calculate:
     # The mass of CO₂ formed.
     # The number of CO₂ molecules formed."""
-    result = await Runner.run(creative_agent, prompt)
+    result = await Runner.run(weather_agent, "Tell me today's weather in karachi.")
     print(result.final_output)
 
 
