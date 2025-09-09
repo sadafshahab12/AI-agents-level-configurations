@@ -60,7 +60,7 @@ async def main():
     calender_agent = Agent(
         name="Calender Extractor",
         instructions="You are a Calendar Event Extractor. Your job is to read and Extract all the calender events from the given data.",
-        output_type=List[CalenderEvent],# multiple objects
+        output_type=List[CalenderEvent],  # multiple objects
         model=model,
     )
     focus_agent = Agent(
@@ -72,6 +72,7 @@ async def main():
             temperature=0.2,
         ),
     )
+
     weather_agent = Agent(
         name="Weather Teller",
         instructions="Fetch the realtime weather data of karachi.",
