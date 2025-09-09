@@ -4,6 +4,7 @@ from agents import (
     Agent,
     OpenAIChatCompletionsModel,
     set_tracing_disabled,
+    ModelSettings
 )
 import asyncio
 import os
@@ -21,10 +22,14 @@ model = OpenAIChatCompletionsModel(model="gemini-2.0-flash", openai_client=clien
 
 async def main():
     spanish_agent = Agent(
-        name="Spanish Agent", instructions="You translate the user's message to spanish"
+        name="Spanish Agent",
+        instructions="You translate the user's message to spanish",
+        model=model,
     )
     french_agent = Agent(
-        name="French Agent", instructions="You translate the user's message to French."
+        name="French Agent",
+        instructions="You translate the user's message to French.",
+        model=model,
     )
     orchestrator_agent = Agent(
         name="orchestrator agent",
@@ -32,19 +37,25 @@ async def main():
             "You are a translation agent. You use the tool given to you to translate."
             "If asked for multiple translations, you call the relevant tools."
         ),
+        model=model,
         tools=[
             spanish_agent.as_tool(
                 tool_name="translate_to_spanish",
-                tool_description="Translate teh user's message to Spanish.",
+                tool_description="Translate the user's message to Spanish.",
             ),
             french_agent.as_tool(
                 tool_name="translate_to_french",
                 tool_description="Translate the user's message to French.",
             ),
         ],
+        model_settings=ModelSettings(
+            tool_choice="required",
+        )
     )
 
-    result = await Runner.run(orchestrator_agent, input="Say 'hello how are you ' in spanish.")
+    result = await Runner.run(
+        orchestrator_agent, input="Say 'hello how are you'"
+    )
     print(result.final_output)
 
 
