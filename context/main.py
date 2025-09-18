@@ -60,7 +60,7 @@ async def main():
         instructions="You must answer all parts of the user's query. Use tools if necessary.",
         model=model,
         tools=[fetch_weather_tool],
-        tool_use_behavior="stop_on_first_tool",
+        tool_use_behavior="auto",
     )
 
     result = await Runner.run(
