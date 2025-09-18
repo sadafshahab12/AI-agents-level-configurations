@@ -62,6 +62,7 @@ async def main():
     ctx = RunContextWrapper(context=UserContext("Sadaf"))
     # print("Debug Context: ", ctx)
     result = await Runner.run(context_agent, "Hello, now tell me my name")
+    
     print(result.final_output)
 
 
