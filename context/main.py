@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass
 from dotenv import load_dotenv
 import os
+import requests
 from agents import (
     Agent,
     RunContextWrapper,
@@ -36,8 +37,17 @@ weather_api_key = os.getenv("WEATHER_API_KEY")
 
 @function_tool
 def fetch_weather_tool(city):
-    """fetch the weather"""
+    """fetch the weather of the city"""
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={weather_api_key}&units=metric"
+
+    response = requests.get(url)
+    if response.status_code != 200:
+        return f"Could not fetch weather for {city}."
+    data = response.json()
+    description = data["weather"][0]["description"]
+    temp = data["main"]["temp"]
+    humidity = data["main"]["humidity"]
+    return f"Weather in {city} is {description} with temperature {temp} and humidity {humidity}%."
 
 
 async def main():
@@ -47,16 +57,16 @@ async def main():
     model = OpenAIChatCompletionsModel(model="gemini-2.0-flash", openai_client=client)
     agent = Agent[UserInfo](
         name="Assistant",
-        tools=[fetch_user_age],
-        instructions=f"The user’s name is {user_info.name}, and their ID is {user_info.uid}. "
-        f"If asked about age, you may use the fetch_user_age tool.",
+        instructions="You must answer all parts of the user's query. Use tools if necessary.",
         model=model,
+        tools=[fetch_weather_tool],
+        tool_use_behavior="stop_on_first_tool",
     )
 
     result = await Runner.run(
         starting_agent=agent,
-        input="Who is the user?",
-        context=user_info,
+        input="Tell me a short joke and also the weather in Karachi.",
+        max_turns=3,
     )
 
     print(result.final_output)
