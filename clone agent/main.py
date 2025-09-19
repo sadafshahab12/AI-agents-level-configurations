@@ -22,7 +22,7 @@ base_agent = Agent(
     name="BaseAssistant",
     instructions="You are angry assistant.",
     model=model,
-    model_settings=ModelSettings(temperature=0.5, max_tokens=20),
+    model_settings=ModelSettings(temperature=0.5, max_tokens=50),
 )
 friendly_agent = base_agent.clone(
     name="Friendly Assistant",
@@ -33,15 +33,23 @@ friendly_agent = base_agent.clone(
 creative_agent = base_agent.clone(
     name="CreativeAssistant",
     instructions="You are creative assistant.",
-    model_settings=ModelSettings(temperature=0.9),  # more creativity
+    model_settings=ModelSettings(temperature=0.9, max_tokens=50),  # more creativity
+)
+precise_agent = base_agent.clone(
+    name="PreciseAssistant",
+    instructions="You are creative assistant.",
+    model_settings=ModelSettings(temperature=0.1, max_tokens=50),  # more creativity
 )
 
-base_agent_result = Runner.run_sync(base_agent, "Hello How are you?")
+base_agent_result = Runner.run_sync(base_agent, "Describe a sunset.")
 friendly_agent_result = Runner.run_sync(friendly_agent, "Hello How are you?")
 creative_agent_result = Runner.run_sync(
     creative_agent, "give me gifting idea what should i sell?"
 )
+precise_agent_result = Runner.run_sync(precise_agent, "Describe a sunset.")
+
 
 print(base_agent_result.final_output)
 print(friendly_agent_result.final_output)
 print(creative_agent_result.final_output)
+print(precise_agent_result.final_output)
